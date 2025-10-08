@@ -1,0 +1,22 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: dev
+    container_name: php-backend-app
+    volumes:
+      - .:/app
+    environment:
+      DATABASE_URL: "sqlite:/app/data/database.sqlite"
+
+  web:
+    image: nginx:latest
+    container_name: php-backend-web
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/app
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
