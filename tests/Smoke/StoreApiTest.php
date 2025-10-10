@@ -7,8 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class StoreApiTest extends TestCase
 {
-    #private string $baseUrl = 'http://php-backend-web';
-    private string $baseUrl = 'http://php-backend-dev';
+    private string $baseUrl = 'http://php-backend-web';
     private static string $testDbPath = '/app/data/database.sqlite';
 
     public static function setUpBeforeClass(): void

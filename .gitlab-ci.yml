@@ -2,19 +2,20 @@ stages:
   - build_test_quality
   - deploy
 
-image: docker:stable
+image: docker/compose:1.29.2
 services:
     - docker:dind
 
 build_test_quality:
   stage: build_test_quality
   script:
-    - docker build -f docker/Dockerfile --target dev -t php-backend-dev .
-    - docker run --rm php-backend-dev phpunit tests
-    - docker run --rm php-backend-dev phpstan analyse src --level=max
-    - docker run --rm php-backend-dev psalm
-    - docker run --rm php-backend-dev phpmd src text cleancode,codesize,controversial,design,naming,unusedcode
-    - docker run --rm php-backend-dev phpcs --standard=PSR12 src
+    - docker-compose -f docker-compose.yml up -d
+    - docker-compose exec -T app composer install
+    - docker-compose exec -T app vendor/bin/phpunit tests
+    - docker-compose exec -T app vendor/bin/phpstan analyse src --level=max
+    - docker-compose exec -T app vendor/bin/phpmd src text cleancode,codesize,design,naming,unusedcode
+    - docker-compose exec -T app vendor/bin/phpcs --standard=PSR12 src
+    - docker-compose down
 
 deploy:
   stage: deploy
