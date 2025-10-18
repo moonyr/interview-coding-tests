@@ -1,0 +1,27 @@
+stages:
+  - build_test_quality
+  - delivery
+
+image: docker/compose:1.29.2
+services:
+    - docker:dind
+
+build_test_quality:
+  stage: build_test_quality
+  script:
+    - docker-compose -f docker-compose.yml up -d
+    - docker-compose exec -T app composer install
+    - docker-compose exec -T app vendor/bin/phpunit tests
+    - docker-compose exec -T app vendor/bin/phpstan analyse src --level=max
+    - docker-compose exec -T app vendor/bin/phpmd src text cleancode,codesize,design,naming,unusedcode
+    - docker-compose exec -T app vendor/bin/phpcs --standard=PSR12 src
+    - docker-compose down
+
+delivery:
+  stage: delivery
+  script:
+    - docker build -f docker/Dockerfile --target prod -t php-backend-prod .
+    - docker tag php-backend-prod registry.gitlab.com/###/tech-tests-portfolio:latest
+    - docker push registry.gitlab.com/###/tech-tests-portfolio:latest
+  only:
+    - main
