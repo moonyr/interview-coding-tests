@@ -1,13 +1,14 @@
 # API REST - Gestion des magasins
 
-Cette API permet de gérer des magasins (CRUD) avec des entrées/sorties JSON.
+Cette API permet de gérer des magasins (CRUD) avec des entrées/sorties JSON. (Développeur·se Back-end PHP | Test technique)
 
 ## Installation rapide
 
+Installer docker et docker compose.
+
 1. Cloner le projet
 ```bash
-git clone <repo-url>
-cd <repo>
+docker compose up -d
 ```
 
 ## Route Disponible
@@ -60,4 +61,17 @@ curl -X PUT http://localhost:8080/stores/update?id=XXX \
 5. Supprimer un magasin
 ```
 curl -X PUT "http://localhost:8080/stores/delete?id=XXX"
+```
+
+## Exemple avec curl
+1. Lancer les tests
+
+```
+make test
+```
+
+1. Lancer les outils de qualité de code
+
+```
+make quality
 ```

@@ -1,6 +1,6 @@
 stages:
   - build_test_quality
-  - deploy
+  - delivery
 
 image: docker/compose:1.29.2
 services:
@@ -17,11 +17,11 @@ build_test_quality:
     - docker-compose exec -T app vendor/bin/phpcs --standard=PSR12 src
     - docker-compose down
 
-deploy:
-  stage: deploy
+delivery:
+  stage: delivery
   script:
     - docker build -f docker/Dockerfile --target prod -t php-backend-prod .
-    - docker tag php-backend-prod registry.gitlab.com/tonuser/tech-tests-portfolio:latest
-    - docker push registry.gitlab.com/tonuser/tech-tests-portfolio:latest
+    - docker tag php-backend-prod registry.gitlab.com/###/tech-tests-portfolio:latest
+    - docker push registry.gitlab.com/###/tech-tests-portfolio:latest
   only:
     - main
