@@ -1,6 +1,8 @@
 {
   "name": "wshop/back-end-test",
-  "require": {},
+  "require": {
+    "firebase/php-jwt": "^6.11"
+  },
   "require-dev": {
     "phpunit/phpunit": "^12.4",
     "phpstan/phpstan": "^2.1",

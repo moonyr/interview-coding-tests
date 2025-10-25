@@ -5,15 +5,29 @@ declare(strict_types=1);
 namespace App\Infrastructure\Controller;
 
 use App\Application\Store\UseCase\ListStoreHandler;
+use App\Infrastructure\Security\AuthMiddleware;
+use App\Infrastructure\Security\JwtEncoderInterface;
+use App\Infrastructure\Security\JwtService;
 
 class ListStoreController
 {
-    public function __construct(private ListStoreHandler $handler)
+    public function __construct(
+        private ListStoreHandler $handler,
+        private JwtEncoderInterface $encoder,
+    )
     {
     }
 
     public function list(): void
     {
+        $jwtService = new JwtService($this->encoder);
+
+        $authMiddleware = new AuthMiddleware($jwtService);
+        $jwtPayload = $authMiddleware->handle();
+        if ($jwtPayload === null) {
+            return;
+        }
+        
         $criteria = [];
         $orderBy = [];
 

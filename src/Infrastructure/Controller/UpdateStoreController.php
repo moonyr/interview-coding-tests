@@ -5,15 +5,29 @@ declare(strict_types=1);
 namespace App\Infrastructure\Controller;
 
 use App\Application\Store\UseCase\UpdateStoreHandler;
+use App\Infrastructure\Security\AuthMiddleware;
+use App\Infrastructure\Security\JwtEncoderInterface;
+use App\Infrastructure\Security\JwtService;
 
 class UpdateStoreController
 {
-    public function __construct(private UpdateStoreHandler $handler)
+    public function __construct(
+        private UpdateStoreHandler $handler,
+        private JwtEncoderInterface $encoder,
+    )
     {
     }
 
     public function update(): void
     {
+        $jwtService = new JwtService($this->encoder);
+
+        $authMiddleware = new AuthMiddleware($jwtService);
+        $jwtPayload = $authMiddleware->handle();
+        if ($jwtPayload === null) {
+            return;
+        }
+
         /**
          * @var string $json
          */

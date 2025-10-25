@@ -5,15 +5,29 @@ declare(strict_types=1);
 namespace App\Infrastructure\Controller;
 
 use App\Application\Store\UseCase\CreateStoreHandler;
+use App\Infrastructure\Security\AuthMiddleware;
+use App\Infrastructure\Security\JwtEncoderInterface;
+use App\Infrastructure\Security\JwtService;
 
 class CreateStoreController
 {
-    public function __construct(private CreateStoreHandler $createStoreHandler)
+    public function __construct(
+        private CreateStoreHandler $createStoreHandler,
+        private JwtEncoderInterface $encoder,
+    )
     {
     }
 
     public function create(): void
     {
+        $jwtService = new JwtService($this->encoder);
+
+        $authMiddleware = new AuthMiddleware($jwtService);
+        $jwtPayload = $authMiddleware->handle();
+        if ($jwtPayload === null) {
+            return;
+        }
+
         /**
          * @var string $json
          */

@@ -2,6 +2,7 @@
 
 namespace Tests\Smoke;
 
+use App\Infrastructure\Security\JwtService;
 use PDO;
 use PHPUnit\Framework\TestCase;
 
@@ -9,6 +10,7 @@ class StoreApiTest extends TestCase
 {
     private string $baseUrl = 'http://php-backend-web';
     private static string $testDbPath = '/app/data/database.sqlite';
+    private static string $token = '';
 
     public static function setUpBeforeClass(): void
     {
@@ -18,6 +20,7 @@ class StoreApiTest extends TestCase
 
         $pdo = new PDO('sqlite:' . self::$testDbPath, 0777);
         chmod(self::$testDbPath, 0666);
+        
         $pdo->exec("
             CREATE TABLE stores (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,7 +35,22 @@ class StoreApiTest extends TestCase
             );
         ");
 
-         putenv("DATABASE_URL=sqlite:" . self::$testDbPath);
+        $pdo->exec("
+            CREATE TABLE users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL UNIQUE,
+                password TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            );
+        ");
+
+        $hash = password_hash('test', PASSWORD_DEFAULT);
+        $pdo->exec("INSERT INTO users (username, password, created_at) VALUES ('test', '$hash', datetime('now'))");
+
+        putenv("DATABASE_URL=sqlite:" . self::$testDbPath);
+
+        $jwtService = new JwtService();
+        self::$token = $jwtService->generateToken(1);
     }
 
     public function testCreateStore(): void
@@ -87,7 +105,13 @@ class StoreApiTest extends TestCase
         $ch = curl_init("{$this->baseUrl}{$endpoint}");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . self::$token,
+        ];
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         if (in_array($method, ['POST', 'PUT'])) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
